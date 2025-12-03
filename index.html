@@ -1,124 +1,378 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArbitrageBot Pro</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            overflow: hidden;
-        }
-        h1 { font-size: clamp(2rem, 8vw, 4rem); font-weight: 900; margin-bottom: 2rem; text-shadow: 0 4px 8px rgba(0,0,0,0.3); animation: glow 2s ease-in-out infinite alternate; }
-        @keyframes glow { from { text-shadow: 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #ff00de; } to { text-shadow: 0 0 20px #fff, 0 0 30px #ff4da6, 0 0 40px #ff00de; } }
-        #coins { font-size: clamp(3rem, 12vw, 8rem); font-weight: 900; margin-bottom: 2rem; background: rgba(255,215,0,0.9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-shadow: 0 8px 32px rgba(255,215,0,0.5); }
-        #tap-btn { 
-            width: clamp(200px, 40vw, 300px); height: clamp(200px, 40vw, 300px); 
-            border-radius: 50%; 
-            background: linear-gradient(45deg, #FFD700, #FFA500);
-            border: none; cursor: pointer; 
-            display: flex; align-items: center; justify-content: center;
-            font-size: clamp(2rem, 6vw, 4rem); font-weight: 900; color: #333;
-            box-shadow: 0 20px 40px rgba(255,215,0,0.4); transition: all 0.2s ease;
-        }
-        #tap-btn:hover { transform: scale(1.1); box-shadow: 0 30px 60px rgba(255,215,0,0.6); }
-        #tap-btn:active { transform: scale(0.98); }
-        .energy { font-size: 1.5rem; margin: 2rem 0; font-weight: 600; }
-        .buttons { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
-        button { padding: 1rem 2rem; border: none; border-radius: 50px; font-size: 1.2rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .invite-btn { background: linear-gradient(45deg, #00C851, #007E33); color: white; }
-        .withdraw-btn { background: linear-gradient(45deg, #2196F3, #1976D2); color: white; }
-        button:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
-        .footer { margin-top: 3rem; opacity: 0.9; font-size: 1.1rem; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArbitrageBot Pro</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      height: 100vh;
+      background: radial-gradient(circle at top, #1f2937 0%, #020617 55%, #000 100%);
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .app {
+      width: 100%;
+      max-width: 420px;
+      height: 100vh;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 12px;
+      background: conic-gradient(from 210deg, #22c55e, #22d3ee, #f97316, #22c55e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(34,197,94,0.6);
+      font-size: 18px;
+    }
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+    .brand-text span:first-child {
+      font-size: 14px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #9ca3af;
+    }
+    .brand-text span:last-child {
+      font-size: 16px;
+      font-weight: 700;
+      color: #f9fafb;
+    }
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.85);
+      border: 1px solid rgba(148,163,184,0.35);
+      backdrop-filter: blur(16px);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pill span.value {
+      color: #fbbf24;
+      font-weight: 600;
+    }
+
+    .card {
+      border-radius: 22px;
+      padding: 16px 18px;
+      background: radial-gradient(circle at top left, rgba(56,189,248,0.22), transparent 45%),
+                  radial-gradient(circle at bottom right, rgba(192,132,252,0.25), transparent 55%),
+                  rgba(15,23,42,0.92);
+      border: 1px solid rgba(148,163,184,0.45);
+      box-shadow:
+        0 18px 40px rgba(15,23,42,0.9),
+        inset 0 0 0 1px rgba(15,23,42,0.8);
+      backdrop-filter: blur(22px);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: #9ca3af;
+    }
+    .coins-main {
+      font-size: 32px;
+      font-weight: 800;
+      color: #facc15;
+    }
+    .coins-label {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .energy-row {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .energy-bar {
+      position: relative;
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .energy-fill {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg,#22c55e,#eab308);
+      box-shadow: 0 0 16px rgba(34,197,94,0.7);
+      transition: width .2s ease-out;
+    }
+
+    .tap-wrapper {
+      margin-top: 6px;
+      display: flex;
+      justify-content: center;
+    }
+    .tap-circle {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 20%, #fef3c7, #facc15, #eab308);
+      box-shadow:
+        0 18px 38px rgba(250,204,21,0.65),
+        0 0 0 1px rgba(120,53,15,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform .14s ease, box-shadow .14s ease;
+    }
+    .tap-circle span {
+      font-size: 20px;
+      font-weight: 800;
+      color: #1f2937;
+      letter-spacing: .08em;
+    }
+    .tap-circle:active {
+      transform: translateY(2px) scale(0.97);
+      box-shadow: 0 10px 22px rgba(250,204,21,0.55);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .btn {
+      border-radius: 18px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #f9fafb;
+      box-shadow: 0 12px 24px rgba(15,23,42,0.9);
+      transition: transform .14s ease, box-shadow .14s ease, filter .14s;
+    }
+    .btn-invite {
+      background: linear-gradient(135deg,#22c55e,#16a34a);
+    }
+    .btn-withdraw {
+      background: linear-gradient(135deg,#3b82f6,#2563eb);
+    }
+    .btn-small {
+      font-size: 12px;
+      padding-inline: 10px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      color: #9ca3af;
+      border: 1px solid rgba(55,65,81,0.9);
+      box-shadow: none;
+      justify-content: flex-start;
+    }
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
+    .btn:active { transform: translateY(1px) scale(0.98); filter: brightness(.95); }
+
+    .bottom {
+      margin-top: auto;
+      padding-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .footer-text {
+      font-size: 11px;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: radial-gradient(circle,#fb923c,#b91c1c);
+      box-shadow: 0 0 10px rgba(248,113,113,0.8);
+    }
+    .main-cta {
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg,#facc15,#f97316);
+      color: #111827;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 14px 32px rgba(248,181,0,0.65);
+    }
+  </style>
 </head>
 <body>
-    <h1>🤑 ArbitrageBot Pro</h1>
-    <div id="coins">0 Coins</div>
-    <button id="tap-btn">TAP!</button>
-    <div class="energy" id="energy">⚡ Energy: 100/100</div>
-    <div class="buttons">
-        <button class="invite-btn" onclick="inviteFriends()">👥 Invite (500 Coins)</button>
-        <button class="withdraw-btn" onclick="withdrawTON()">💰 Withdraw TON</button>
+  <div class="app">
+    <div class="top-bar">
+      <div class="brand">
+        <div class="brand-logo">₹</div>
+        <div class="brand-text">
+          <span>Arbitrage</span>
+          <span>ArbitrageBot Pro</span>
+        </div>
+      </div>
+      <div class="top-right">
+        <div class="pill">
+          <span>Wallet</span>
+          <span class="value" id="wallet-ton">0 TON</span>
+        </div>
+        <div class="pill">
+          <span>Lvl</span>
+          <span class="value" id="user-level">1</span>
+        </div>
+      </div>
     </div>
-    <div class="footer">🔥 Best Amazon/Flipkart Deals Daily</div>
 
-    <script>
-        let coins = 0;
-        let energy = 100;
-        let energyRegenInterval;
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="subtitle">Total balance</div>
+          <div class="coins-main" id="coins">0</div>
+          <div class="coins-label">Game Coins • 10 = 1 point</div>
+        </div>
+      </div>
 
-        // Telegram WebApp init
-        if (window.Telegram?.WebApp) {
-            Telegram.WebApp.ready();
-            Telegram.WebApp.MainButton.setText('Get Premium ₹99').show().onClick(() => alert('Premium: Unlimited Energy + VIP Deals!'));
-            Telegram.WebApp.expand();
-        }
+      <div class="energy-row">
+        <span>⚡ Energy</span>
+        <span id="energy-label">100 / 100</span>
+      </div>
+      <div class="energy-bar">
+        <div class="energy-fill" id="energy-fill"></div>
+      </div>
 
-        document.getElementById('tap-btn').onclick = () => {
-            if (energy > 0) {
-                coins += 10;
-                energy -= 1;
-                updateUI();
-                if (window.Telegram?.WebApp) Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-                
-                // Coin fly animation
-                createCoinFly();
-            } else {
-                alert('⏳ Energy regenerating... Come back in 1 hour!');
-            }
-        };
+      <div class="tap-wrapper">
+        <div class="tap-circle" id="tap-btn">
+          <span>TAP</span>
+        </div>
+      </div>
 
-        function updateUI() {
-            document.getElementById('coins').textContent = coins.toLocaleString() + ' Coins';
-            document.getElementById('energy').textContent = `⚡ Energy: ${energy}/100`;
-        }
+      <div class="actions">
+        <button class="btn btn-invite" onclick="invite()">
+          👥 Invite • +500
+        </button>
+        <button class="btn btn-withdraw" onclick="withdraw()">
+          💰 Withdraw TON
+        </button>
+      </div>
+    </div>
 
-        function createCoinFly() {
-            const coin = document.createElement('div');
-            coin.textContent = '+10';
-            coin.style.cssText = 'position:fixed; color:#FFD700; font-size:2rem; font-weight:bold; pointer-events:none; z-index:9999; left:50%; top:50%; transform:translate(-50%,-50%);';
-            document.body.appendChild(coin);
-            coin.animate([
-                { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
-                { transform: 'translate(-30vw, -60vh) scale(0.5)', opacity: 0 }
-            ], { duration: 1000, easing: 'ease-out' }).onfinish = () => coin.remove();
-        }
+    <div class="bottom">
+      <button class="btn btn-small">
+        📈 Today’s best Amazon / Flipkart price drops
+      </button>
+      <div class="footer-text">
+        <div class="footer-dot"></div>
+        <span>Smart alerts only – no spam, no random ads.</span>
+      </div>
+      <button class="main-cta" id="premium-btn">
+        ⭐ Get Premium for ₹99 • Unlimited alerts
+      </button>
+    </div>
+  </div>
 
-        function inviteFriends() {
-            if (window.Telegram?.WebApp) {
-                Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(Telegram.WebApp.initDataUnsafe.start_app_message)}&text=Join ArbitrageBot Pro! Earn TON coins 🤑`);
-            } else {
-                alert('Invite link copied! Share with friends for 500 bonus coins each!');
-            }
-            coins += 500;
-            updateUI();
-        }
+  <script>
+    let coins = 0;
+    let energy = 100;
 
-        function withdrawTON() {
-            if (coins >= 1000) {
-                alert('✅ TON withdrawal requested! Check Tonkeeper wallet.');
-            } else {
-                alert('Min 1000 coins required for TON withdrawal');
-            }
-        }
+    function updateUI() {
+      document.getElementById('coins').textContent = coins.toLocaleString();
+      document.getElementById('energy-label').textContent = energy + ' / 100';
+      document.getElementById('energy-fill').style.width = energy + '%';
+    }
 
-        // Energy regeneration
-        energyRegenInterval = setInterval(() => {
-            if (energy < 100) {
-                energy += 1;
-                updateUI();
-            }
-        }, 30000); // 30 seconds per energy
-    </script>
+    const tapBtn = document.getElementById('tap-btn');
+    tapBtn.addEventListener('click', () => {
+      if (energy <= 0) {
+        alert('Energy low. Premium users get unlimited tapping 🔋');
+        return;
+      }
+      coins += 10;
+      energy -= 1;
+      updateUI();
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+      }
+    });
+
+    function invite() {
+      coins += 500;
+      updateUI();
+      if (window.Telegram?.WebApp) {
+        Telegram.WebApp.openTelegramLink('https://t.me/share/url?url=https://t.me/ArbitrageProBot&text=Try ArbitrageBot Pro – earn coins for tracking price drops.');
+      } else {
+        alert('Invite +500 coins added (demo).');
+      }
+    }
+
+    function withdraw() {
+      if (coins < 1000) {
+        alert('Min 1000 coins needed to request TON withdrawal.');
+        return;
+      }
+      alert('Withdrawal request created (demo). In real version this will send TON to your wallet.');
+    }
+
+    const premiumBtn = document.getElementById('premium-btn');
+    premiumBtn.addEventListener('click', () => {
+      alert('Premium flow (₹99 / TON) will be wired here.');
+    });
+
+    if (window.Telegram?.WebApp) {
+      Telegram.WebApp.ready();
+      Telegram.WebApp.expand();
+    }
+
+    updateUI();
+  </script>
 </body>
 </html>
